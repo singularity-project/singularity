@@ -1295,7 +1295,7 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
 
 static const int64 nTargetTimespan = 420; // 7 minutes (NUM_ALGOS * 210 seconds)
 static const int64 nTargetSpacing = 420; // 7 minutes (NUM_ALGOS * 210 seconds)
-static const int64 nInterval = 1; // retargets every blocks
+static const int64 nInterval = 1; // retargets every blocks;
 
 static const int64 nAveragingInterval = 3; // 3 blocks
 static const int64 nAveragingTargetTimespan = nAveragingInterval * nTargetSpacing;
@@ -1337,8 +1337,67 @@ unsigned int ComputeMinWork(unsigned int nBase, int64 nTime)
 
 static const int64 nMinActualTimespan = nAveragingTargetTimespan * (100 - nMaxAdjustUp) / 100;
 static const int64 nMaxActualTimespan = nAveragingTargetTimespan * (100 + nMaxAdjustDown) / 100;
+
+
+unsigned int static DigiShield(const CBlockIndex* pindexLast, const CBlockHeader *pblocka, int algo)
+{
+
+    unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
+
+    int64 retargetTimespan = nTargetTimespan;
+    int64 retargetInterval = nTargetTimespan / nTargetSpacing;
+
+    const CBlockIndex* pindexPrev = GetLastBlockIndexForAlgo(pindexLast, algo);
+
+    // Only change once per interval
+    if ((pindexPrev->nHeight+1) % retargetInterval != 0)
+    {
+        return pindexPrev->nBits;
+    }
+
+    // This fixes an issue where a 51% attack can change difficulty at will.
+    // Go back the full period unless it's the first retarget after genesis. Code courtesy of Art Forz
+    int blockstogoback = retargetInterval-1;
+    if ((pindexPrev->nHeight+1) != retargetInterval)
+        blockstogoback = retargetInterval;
+
+    // Go back by what we want to be 14 days worth of blocks
+    const CBlockIndex* pindexFirst = pindexPrev;
+    for (int i = 0; pindexFirst && i < blockstogoback; i++) {
+        pindexFirst = pindexFirst->pprev;
+        pindexFirst = GetLastBlockIndexForAlgo(pindexFirst, algo);
+    }
+    // Limit adjustment step
+    int64 nActualTimespan = pindexPrev->GetBlockTime() - pindexFirst->GetBlockTime();
+    printf(" nActualTimespan = %"PRI64d" before bounds\n", nActualTimespan);
     
-unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo)
+    CBigNum bnNew;
+    bnNew.SetCompact(pindexLast->nBits);
+    
+ //DigiShield implementation - thanks to RealSolid & WDC for this code
+// amplitude filter - thanks to daft27 for this code
+        nActualTimespan = retargetTimespan + (nActualTimespan - retargetTimespan)/8;
+        printf("DIGISHIELD RETARGET\n");
+        if (nActualTimespan < (retargetTimespan - (retargetTimespan/4)) ) nActualTimespan = (retargetTimespan - (retargetTimespan/4));
+        if (nActualTimespan > (retargetTimespan + (retargetTimespan/2)) ) nActualTimespan = (retargetTimespan + (retargetTimespan/2));
+    // Retarget
+    
+    bnNew *= nActualTimespan;
+    bnNew /= retargetTimespan;
+
+    if (bnNew > Params().ProofOfWorkLimit(algo))
+    bnNew = Params().ProofOfWorkLimit(algo);
+
+    /// debug print
+    printf("GetNextWorkRequired: DIGISHIELD RETARGET\n");
+    printf("nTargetTimespan = %"PRI64d" nActualTimespan = %"PRI64d"\n", retargetTimespan, nActualTimespan);
+    printf("Before: %08x %s\n", pindexLast->nBits, CBigNum().SetCompact(pindexLast->nBits).getuint256().ToString().c_str());
+    printf("After: %08x %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
+
+    return bnNew.GetCompact();
+}
+    
+unsigned int static GetNextWorkRequiredOld(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo)
 {
     unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
     
@@ -1403,6 +1462,15 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
     return bnNew.GetCompact();
 }
+
+unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo){
+	int nHeight = pindexLast->nHeight + 1;
+	if (nHeight < 320) return GetNextWorkRequiredOld(pindexLast, pblock, algo);
+	else
+	return DigiShield(pindexLast, pblock, algo);
+}
+
+
 
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, int algo)
 {
