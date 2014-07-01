@@ -1299,6 +1299,10 @@ static const int64 nTargetTimespan = 420; // 7 minutes (NUM_ALGOS * 210 seconds)
 static const int64 nTargetSpacing = 420; // 7 minutes (NUM_ALGOS * 210 seconds)
 static const int64 nInterval = 1; // retargets every blocks;
 
+static const int64 nTargetTimespanDigi = 360; // 7 minutes (NUM_ALGOS * 210 seconds)
+static const int64 nTargetSpacingDigi = 360; // 7 minutes (NUM_ALGOS * 210 seconds)
+
+
 static const int64 nAveragingInterval = 3; // 3 blocks
 static const int64 nAveragingTargetTimespan = nAveragingInterval * nTargetSpacing;
 
@@ -1346,8 +1350,8 @@ unsigned int static DigiShield(const CBlockIndex* pindexLast, const CBlockHeader
 
     unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
 
-    int64 retargetTimespan = nTargetTimespan;
-    int64 retargetInterval = nTargetTimespan / nTargetSpacing;
+    int64 retargetTimespan = nTargetTimespanDigi;
+    int64 retargetInterval = nTargetTimespanDigi / nTargetSpacingDigi;
 
     const CBlockIndex* pindexPrev = GetLastBlockIndexForAlgo(pindexLast, algo);
 
