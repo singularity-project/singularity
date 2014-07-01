@@ -1465,7 +1465,7 @@ unsigned int static GetNextWorkRequiredOld(const CBlockIndex* pindexLast, const 
 
 unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo){
 	int nHeight = pindexLast->nHeight + 1;
-	if (nHeight < 320) return GetNextWorkRequiredOld(pindexLast, pblock, algo);
+	if (nHeight < 1500) return GetNextWorkRequiredOld(pindexLast, pblock, algo);
 	else
 	return DigiShield(pindexLast, pblock, algo);
 }

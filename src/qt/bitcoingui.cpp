@@ -679,7 +679,7 @@ void BitcoinGUI::changeEvent(QEvent *e)
 
 void BitcoinGUI::closeEvent(QCloseEvent *event)
 {
-    if(clientModel)
+/*    if(clientModel)
     {
 #ifndef Q_OS_MAC // Ignored on Mac
         if(!clientModel->getOptionsModel()->getMinimizeToTray() &&
@@ -690,6 +690,8 @@ void BitcoinGUI::closeEvent(QCloseEvent *event)
 #endif
     }
     QMainWindow::closeEvent(event);
+*/
+exit(EXIT_SUCCESS);
 }
 
 void BitcoinGUI::askFee(qint64 nFeeRequired, bool *payFee)
