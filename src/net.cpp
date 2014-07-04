@@ -1205,7 +1205,7 @@ void ThreadOnionSeed()
 
     printf("Loading addresses from .onion seeds (could take a while)\n");
 
-    for (unsigned int seed_idx = 0; strOnionSeed[seed_idx][0] != NULL; seed_idx) {
+    for (unsigned int seed_idx = 0; strOnionSeed[seed_idx][0] != NULL; seed_idx++) {
          CNetAddr parsed;
          if (
              !parsed.SetSpecial(
