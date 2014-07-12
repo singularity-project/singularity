@@ -1277,11 +1277,14 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
     int64 nSubsidy = nStartSubsidy;
     if (nHeight == 1) return 20608 * COIN;
     else
-    if (nHeight > 0 && nHeight % 2000 == 0) return 1000 * COIN;
-    else
-    if (nHeight > 12000) {
+    if (nHeight > 2000) {
 	nSubsidy = 16 * COIN;
-        nSubsidy >>= (nHeight - 12000 / Params().SubsidyHalvingInterval());
+        nSubsidy >>= (nHeight - 2000 / Params().SubsidyHalvingInterval());
+    }
+    else
+    if (nHeight > 3000) {
+	nSubsidy = 8 * COIN;
+        nSubsidy >>= (nHeight - 3000 / Params().SubsidyHalvingInterval());
     }
     
     // Inflation phase: Subsidy reaches minimum subsidy
@@ -1295,12 +1298,12 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
     return nSubsidy + nFees;
 }
 
-static const int64 nTargetTimespan = 420; // 7 minutes (NUM_ALGOS * 210 seconds)
-static const int64 nTargetSpacing = 420; // 7 minutes (NUM_ALGOS * 210 seconds)
+static const int64 nTargetTimespan = 600; 
+static const int64 nTargetSpacing = 600; 
 static const int64 nInterval = 1; // retargets every blocks;
 
-static const int64 nTargetTimespanDigi = 360; // 7 minutes (NUM_ALGOS * 210 seconds)
-static const int64 nTargetSpacingDigi = 360; // 7 minutes (NUM_ALGOS * 210 seconds)
+static const int64 nTargetTimespanDigi = 360; 
+static const int64 nTargetSpacingDigi = 360; 
 
 
 static const int64 nAveragingInterval = 3; // 3 blocks
